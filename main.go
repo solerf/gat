@@ -126,19 +126,19 @@ func decode(avro []byte) (dec *ocf.Decoder, err error) {
 }
 
 func parse(d *ocf.Decoder) (avroMap []*map[string]interface{}, err error) {
-	var piece map[string]interface{}
 	var avros []*map[string]interface{}
 
-	if !d.HasNext() {
-		return avroMap, fmt.Errorf("avro is empty")
-	}
-
 	for d.HasNext() {
+		var piece map[string]interface{}
 		err = d.Decode(&piece)
 		if err != nil {
 			return avroMap, fmt.Errorf("could not parse avro: %v", err)
 		}
 		avros = append(avros, &piece)
+	}
+
+	if len(avros) == 0 {
+		return avroMap, fmt.Errorf("avro is empty")
 	}
 	return avros, err
 }
