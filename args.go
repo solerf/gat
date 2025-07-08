@@ -8,12 +8,13 @@ import (
 	"os"
 )
 
-type CommandType struct{}
+type CommandType struct {
+	AvroAbsolutePath string `arg:"positional, required" placeholder:"avro_absolute_path" help:"absolute path to avro file"`
+}
 
 type CliArgs struct {
 	ToJson    *CommandType `arg:"subcommand:tojson, required" help:"Extracts JSON from provided AVRO"`
 	GetSchema *CommandType `arg:"subcommand:getschema, required" help:"Extracts Schema from provided AVRO"`
-	Avro      string       `arg:"-a, required" help:"absolute path to avro file"`
 }
 
 var cArgs CliArgs
@@ -50,7 +51,11 @@ func fromPipe() (input []byte, err error) {
 
 func fromArgs() (input []byte, err error) {
 	arg.MustParse(&cArgs)
-	avroPath := cArgs.Avro
+	avroPath := cArgs.ToJson.AvroAbsolutePath
+	if len(avroPath) == 0 {
+		avroPath = cArgs.GetSchema.AvroAbsolutePath
+	}
+
 	if _, err = os.Stat(avroPath); errors.Is(err, os.ErrNotExist) {
 		return input, fmt.Errorf("avro file not found: %v", avroPath)
 	}
