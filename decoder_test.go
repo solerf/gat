@@ -1,13 +1,11 @@
 package main
 
 import (
-	"os"
 	"testing"
 )
 
 func Test_ReadBundleOfAvros(t *testing.T) {
-	file, _ := os.ReadFile("testdata/bundles.avro")
-	json, err := ReadJson(file)
+	json, err := ReadJson("testdata/bundles.avro")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -18,9 +16,7 @@ func Test_ReadBundleOfAvros(t *testing.T) {
 }
 
 func Test_ReadAvro(t *testing.T) {
-	file, _ := os.ReadFile("testdata/single.avro")
-
-	json, err := ReadJson(file)
+	json, err := ReadJson("testdata/single.avro")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -31,8 +27,7 @@ func Test_ReadAvro(t *testing.T) {
 }
 
 func Test_ReadSchema(t *testing.T) {
-	file, _ := os.ReadFile("testdata/single.avro")
-	json, err := ReadSchema(file)
+	json, err := ReadSchema("testdata/single.avro")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

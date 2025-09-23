@@ -1,22 +1,25 @@
 package main
 
 import (
-	"github.com/hamba/avro/v2"
 	"math/rand/v2"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/hamba/avro/v2"
 )
 
 func Benchmark_ReadJson(b *testing.B) {
-	a := genAvro()
+	path := genAvro()
 	for b.Loop() {
-		ReadJson(a)
+		_, _ = ReadJson(path)
 	}
 }
 
 var r = rand.New(rand.New(rand.NewPCG(10, 20)))
 
-func genAvro() []byte {
+func genAvro() string {
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 
 	randomString := func(size int) string {
@@ -39,7 +42,10 @@ func genAvro() []byte {
 
 	avroSchema, _ := avro.Parse(rawSchema)
 	encoded, _ := avro.Marshal(avroSchema, s)
-	return encoded
+
+	path := filepath.Join(os.TempDir(), "temp.avro")
+	_ = os.WriteFile(path, encoded, 0766)
+	return path
 }
 
 var rawSchema = `{

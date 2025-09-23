@@ -3,67 +3,92 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+
 	"github.com/hamba/avro/v2/ocf"
 )
 
-func ReadSchema(avro []byte) ([]byte, error) {
-	decoder, err := decode(avro)
+func ReadSchema(avroPath string) ([]byte, error) {
+	b, err := readFile(avroPath)
 	if err != nil {
 		return nil, err
 	}
 
-	schemaBytes := decoder.Metadata()["avro.schema"]
-
-	var buff bytes.Buffer
-	err = json.Indent(&buff, schemaBytes, "", "  ")
-
+	decoder, err := decode(b)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse schema to json: %v", err)
+		return nil, err
 	}
-	return buff.Bytes(), err
+	return identJson(decoder.Metadata()["avro.schema"])
 }
 
-func ReadJson(avro []byte) ([]byte, error) {
-	decoded, err := decode(avro)
+func ReadJson(avroPath string) ([]byte, error) {
+	b, err := readFile(avroPath)
 	if err != nil {
 		return nil, err
 	}
 
-	parsed, errParse := parse(decoded)
-	if errParse != nil {
-		return nil, errParse
+	decoder, err := decode(b)
+	if err != nil {
+		return nil, err
 	}
 
-	b, err := json.MarshalIndent(parsed, "", "  ")
+	jsonB, err := parse(decoder)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse content to json: %v", err)
+		return nil, err
 	}
-	return b, nil
+	return identJson(jsonB)
 }
 
-func decode(avro []byte) (dec *ocf.Decoder, err error) {
+func identJson(data []byte) ([]byte, error) {
+	buff := new(bytes.Buffer)
+	err := json.Indent(buff, data, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return buff.Bytes(), nil
+}
+
+func decode(avro []byte) (*ocf.Decoder, error) {
 	// it reads with the schema from the metadata
-	dec, err = ocf.NewDecoder(bytes.NewReader(avro))
+	dec, err := ocf.NewDecoder(bytes.NewReader(avro))
 	if err != nil {
-		return dec, fmt.Errorf("could not decode avro: %v", err)
+		return nil, fmt.Errorf("failed decoding avro: %w", err)
 	}
-	return dec, err
+	return dec, nil
 }
 
-func parse(d *ocf.Decoder) ([]map[string]interface{}, error) {
-	avroObjs := make([]map[string]interface{}, 0, 10)
+func parse(d *ocf.Decoder) ([]byte, error) {
+	avroObjs := make([]map[string]interface{}, 0)
 	for d.HasNext() {
-		piece := make(map[string]interface{}, 20)
+		piece := make(map[string]interface{})
 		err := d.Decode(&piece)
 		if err != nil {
-			return nil, fmt.Errorf("could not parse avro: %v", err)
+			return nil, fmt.Errorf("failed parsing avro: %w", err)
 		}
 		avroObjs = append(avroObjs, piece)
 	}
 
 	if len(avroObjs) == 0 {
-		return nil, fmt.Errorf("avro is empty")
+		return nil, errors.New("avro is empty")
 	}
-	return avroObjs, nil
+
+	marshal, err := json.Marshal(avroObjs)
+	if err != nil {
+		return nil, fmt.Errorf("failed marshalling: %w", err)
+	}
+
+	return marshal, nil
+}
+
+func readFile(path string) ([]byte, error) {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("%s not found", path)
+	}
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read %s: %w", path, err)
+	}
+	return b, nil
 }

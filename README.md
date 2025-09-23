@@ -1,15 +1,21 @@
-Simple avro-tools with 
+simple avro-tools with
+
 - https://github.com/hamba/avro
 - https://github.com/alexflint/go-arg
 
 ```
-Usage: gat --avro AVRO <command> [<args>]
+Usage: gat --avro-path=<PATH> <command>
 
-Options:
-  --avro AVRO, -a AVRO   absolute path to avro file
-  --help, -h             display this help and exit
+Flags:
+  -h, --help                Show context-sensitive help.
+  -a, --avro-path=<PATH>    absolute path to json file
 
 Commands:
-  tojson                 Extracts JSON from provided AVRO
-  getschema              Extracts Schema from provided AVRO
+  tojson --avro-path=<PATH>
+    prints avro to json format
+
+  getschema --avro-path=<PATH>
+    prints avro schema to json format
+
+Run "gat <command> --help" for more information on a command.
 ```
