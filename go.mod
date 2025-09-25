@@ -1,4 +1,4 @@
-module gat
+module github.com/solerf/gat
 
 go 1.25.1
 

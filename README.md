@@ -1,7 +1,6 @@
 simple avro-tools with
 
 - https://github.com/hamba/avro
-- https://github.com/alexflint/go-arg
 
 ```
 Usage: gat --avro-path=<PATH> <command>
