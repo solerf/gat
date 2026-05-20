@@ -16,6 +16,7 @@ func ReadSchema(avroPath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer b.Close()
 
 	decoder, err := decode(b)
 	if err != nil {
@@ -29,7 +30,12 @@ func ReadJson(avroPath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer b.Close()
 
+	return process(b)
+}
+
+func process(b io.Reader) ([]byte, error) {
 	decoder, err := decode(b)
 	if err != nil {
 		return nil, err
@@ -83,7 +89,7 @@ func parse(d *ocf.Decoder) ([]byte, error) {
 	return marshal, nil
 }
 
-func readFile(path string) (io.Reader, error) {
+func readFile(path string) (io.ReadCloser, error) {
 	b, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w", path, err)

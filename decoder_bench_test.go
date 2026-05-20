@@ -1,9 +1,8 @@
 package main
 
 import (
+	"bytes"
 	"math/rand/v2"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
@@ -11,21 +10,21 @@ import (
 )
 
 func Benchmark_ReadJson(b *testing.B) {
-	path := genAvro()
+	payload := genAvro().Bytes()
 	for b.Loop() {
-		_, _ = ReadJson(path)
+		_, _ = process(bytes.NewReader(payload))
 	}
 }
 
 var r = rand.New(rand.New(rand.NewPCG(10, 20)))
 
-func genAvro() string {
+func genAvro() *bytes.Buffer {
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 
 	randomString := func(size int) string {
 		alphabetSize := len(chars)
 		var sb strings.Builder
-		for i := 0; i < size; i++ {
+		for range size {
 			ch := chars[r.IntN(alphabetSize)]
 			sb.WriteRune(ch)
 		}
@@ -42,10 +41,7 @@ func genAvro() string {
 
 	avroSchema, _ := avro.Parse(rawSchema)
 	encoded, _ := avro.Marshal(avroSchema, s)
-
-	path := filepath.Join(os.TempDir(), "temp.avro")
-	_ = os.WriteFile(path, encoded, 0644)
-	return path
+	return bytes.NewBuffer(encoded)
 }
 
 var rawSchema = `{
