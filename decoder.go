@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/hamba/avro/v2/ocf"
@@ -50,9 +51,9 @@ func indentJson(data []byte) ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
-func decode(avro []byte) (*ocf.Decoder, error) {
+func decode(avroReader io.Reader) (*ocf.Decoder, error) {
 	// it reads with the schema from the metadata
-	dec, err := ocf.NewDecoder(bytes.NewReader(avro))
+	dec, err := ocf.NewDecoder(avroReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed decoding avro: %w", err)
 	}
@@ -82,8 +83,8 @@ func parse(d *ocf.Decoder) ([]byte, error) {
 	return marshal, nil
 }
 
-func readFile(path string) ([]byte, error) {
-	b, err := os.ReadFile(path)
+func readFile(path string) (io.Reader, error) {
+	b, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w", path, err)
 	}
