@@ -26,7 +26,7 @@ func genAvro() string {
 		alphabetSize := len(chars)
 		var sb strings.Builder
 		for i := 0; i < size; i++ {
-			ch := chars[rand.IntN(alphabetSize)]
+			ch := chars[r.IntN(alphabetSize)]
 			sb.WriteRune(ch)
 		}
 		return sb.String()
@@ -44,7 +44,7 @@ func genAvro() string {
 	encoded, _ := avro.Marshal(avroSchema, s)
 
 	path := filepath.Join(os.TempDir(), "temp.avro")
-	_ = os.WriteFile(path, encoded, 0766)
+	_ = os.WriteFile(path, encoded, 0644)
 	return path
 }
 

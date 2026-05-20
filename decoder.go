@@ -20,7 +20,7 @@ func ReadSchema(avroPath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return identJson(decoder.Metadata()["avro.schema"])
+	return indentJson(decoder.Metadata()["avro.schema"])
 }
 
 func ReadJson(avroPath string) ([]byte, error) {
@@ -38,10 +38,10 @@ func ReadJson(avroPath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return identJson(jsonB)
+	return indentJson(jsonB)
 }
 
-func identJson(data []byte) ([]byte, error) {
+func indentJson(data []byte) ([]byte, error) {
 	buff := new(bytes.Buffer)
 	err := json.Indent(buff, data, "", "  ")
 	if err != nil {
@@ -83,9 +83,6 @@ func parse(d *ocf.Decoder) ([]byte, error) {
 }
 
 func readFile(path string) ([]byte, error) {
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("%s not found", path)
-	}
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %s: %w", path, err)
